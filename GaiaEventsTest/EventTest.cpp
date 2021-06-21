@@ -118,3 +118,38 @@ TEST(EventTest, AutoRemove)
     destruction_event.reset();
     test_event.Trigger();
 }
+
+TEST(EventTest, TimerEvent)
+{
+    TimerEvent timer;
+    timer.Add(Functor<void>([]{
+        std::cout << "Timer event triggered." << std::endl;
+    }));
+    timer.Start();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    timer.Stop();
+}
+
+TEST(EventTest, TimerEventWithIntervalTime)
+{
+    TimerEvent timer(std::chrono::milliseconds(500));
+    timer.Add(Functor<void>([]{
+        std::cout << "Timer event triggered." << std::endl;
+    }));
+    timer.Start();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    timer.Stop();
+}
+
+TEST(EventTest, TimerEventWithDynamicTime)
+{
+    TimerEvent timer;
+    timer.Add(Functor<void>([]{
+        std::cout << "Timer event triggered." << std::endl;
+    }));
+    timer.Start();
+    std::this_thread::sleep_for(std::chrono::seconds(3));
+    timer.IntervalTime = std::chrono::milliseconds(300);
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+    timer.Stop();
+}
