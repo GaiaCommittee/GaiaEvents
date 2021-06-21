@@ -5,6 +5,7 @@
 #include <list>
 #include <shared_mutex>
 #include <tbb/tbb.h>
+#include <memory>
 
 namespace Gaia::Events
 {
@@ -24,12 +25,12 @@ namespace Gaia::Events
 
     protected:
         /// Registered handlers.
-        std::list<Handler> Handlers;
+        std::list<std::unique_ptr<Handler>> Handlers;
         /// Mutex to protect handlers.
         std::shared_mutex HandlersMutex;
 
         /// Remove the handler pointed by the given iterator.
-        void Remove(typename std::list<Handler>::iterator iterator)
+        void Remove(typename std::list<std::unique_ptr<Handler>>::iterator iterator)
         {
             Handlers.erase(iterator);
         }
@@ -43,10 +44,11 @@ namespace Gaia::Events
          * @param handler The handler to add.
          * @return The Functor to remove the added handler. Notice that this handler can only be called once.
          */
-        DisposableFunctor<void> Add(Handler handler)
+        template<typename HandlerType, typename = typename std::enable_if_t<std::is_base_of_v<Handler, HandlerType>>>
+        DisposableFunctor<void> Add(HandlerType handler)
         {
             std::unique_lock lock(HandlersMutex);
-            auto finder = Handlers.insert(Handlers.end(), std::move(handler));
+            auto finder = Handlers.insert(Handlers.end(), std::unique_ptr<Handler>(new HandlerType(handler)));
             return DisposableFunctor<void>([this, finder](){
                 this->Remove(finder);
             });
@@ -68,8 +70,9 @@ namespace Gaia::Events
         void Trigger(ArgumentTypes... arguments)
         {
             std::shared_lock lock(EventBaseType::HandlersMutex);
-            tbb::parallel_for_each(EventBaseType::Handlers, [arguments...](typename EventBaseType::Handler& handler){
-                handler(arguments...);
+            tbb::parallel_for_each(EventBaseType::Handlers, [arguments...](
+                    std::unique_ptr<typename EventBaseType::Handler>& handler){
+                (*handler)(arguments...);
             });
         }
     };
@@ -89,8 +92,9 @@ namespace Gaia::Events
         void Trigger()
         {
             std::shared_lock lock(EventBaseType::HandlersMutex);
-            tbb::parallel_for_each(EventBaseType::Handlers, [](typename EventBaseType::Handler& handler){
-                handler();
+            tbb::parallel_for_each(EventBaseType::Handlers, [](
+                    std::unique_ptr<typename EventBaseType::Handler>& handler){
+                (*handler)();
             });
         }
     };
