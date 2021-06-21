@@ -48,7 +48,8 @@ namespace Gaia::Events
         DisposableFunctor<void> Add(HandlerType handler)
         {
             std::unique_lock lock(HandlersMutex);
-            auto finder = Handlers.insert(Handlers.end(), std::unique_ptr<Handler>(new HandlerType(handler)));
+            auto finder = Handlers.insert(Handlers.end(),
+                                          std::make_unique<HandlerType>(handler));
             return DisposableFunctor<void>([this, finder](){
                 this->Remove(finder);
             });
