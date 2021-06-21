@@ -69,6 +69,8 @@ namespace Gaia::Events
         /// Invoke all event handlers concurrently.
         void Trigger(ArgumentTypes... arguments)
         {
+            if (EventBaseType::Handlers.empty()) return;
+
             std::shared_lock lock(EventBaseType::HandlersMutex);
             tbb::parallel_for_each(EventBaseType::Handlers, [arguments...](
                     std::unique_ptr<typename EventBaseType::Handler>& handler){
@@ -91,6 +93,8 @@ namespace Gaia::Events
         /// Invoke all event handlers concurrently.
         void Trigger()
         {
+            if (EventBaseType::Handlers.empty()) return;
+
             std::shared_lock lock(EventBaseType::HandlersMutex);
             tbb::parallel_for_each(EventBaseType::Handlers, [](
                     std::unique_ptr<typename EventBaseType::Handler>& handler){
