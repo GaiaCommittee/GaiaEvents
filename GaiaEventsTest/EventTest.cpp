@@ -52,3 +52,55 @@ TEST(EventTest, DestructionEvent)
         std::cout << "Event handler executed." << std::endl;
     }));
 }
+
+TEST(EventTest, RemoveHandler)
+{
+    Event<void> test_event;
+
+    auto remover1 = test_event.Add(Functor<void>([]{
+        std::cout << "Event handler executed. 1" << std::endl;
+    }));
+    auto remove2 = test_event.Add(Functor<void>([]{
+        std::cout << "Event handler executed. 2" << std::endl;
+    }));
+    auto remove3 = test_event.Add(Functor<void>([]{
+        std::cout << "Event handler executed. 3" << std::endl;
+    }));
+
+    test_event.Trigger();
+
+    remove2();
+
+    test_event.Trigger();
+
+    remove2();
+    ASSERT_TRUE(remove2.IsEmpty());
+
+    test_event.Trigger();
+}
+
+TEST(EventTest, RemoveHandlerWithParameter)
+{
+    Event<int> test_event;
+
+    auto remover1 = test_event.Add(Functor<int>([](int index){
+        std::cout << "Event handler executed." << index << std::endl;
+    }));
+    auto remover2 = test_event.Add(Functor<int>([](int index){
+        std::cout << "Event handler executed." << index << std::endl;
+    }));
+    auto remover3 = test_event.Add(Functor<int>([](int index){
+        std::cout << "Event handler executed." << index << std::endl;
+    }));
+
+    test_event.Trigger(1);
+
+    remover2();
+
+    test_event.Trigger(2);
+
+    remover2();
+    ASSERT_TRUE(remover2.IsEmpty());
+
+    test_event.Trigger(3);
+}
