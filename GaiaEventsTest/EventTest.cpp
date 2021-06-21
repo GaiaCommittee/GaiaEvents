@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "../GaiaEvents/GaiaEvents.hpp"
 #include <iostream>
+#include <memory>
 
 using namespace Gaia::Events;
 
@@ -103,4 +104,17 @@ TEST(EventTest, RemoveHandlerWithParameter)
     ASSERT_TRUE(remover2.IsEmpty());
 
     test_event.Trigger(3);
+}
+
+TEST(EventTest, AutoRemove)
+{
+    auto destruction_event = std::make_unique<DestructionEvent>();
+    Event<void> test_event;
+    destruction_event->Add(test_event.Add(Functor<void>([]{
+        std::cout << "Event Handler executed. 1" << std::endl;
+    })));
+
+    test_event.Trigger();
+    destruction_event.reset();
+    test_event.Trigger();
 }
