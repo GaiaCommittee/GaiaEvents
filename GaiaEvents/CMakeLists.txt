@@ -68,6 +68,9 @@ find_hpp(${CMAKE_CURRENT_SOURCE_DIR} TARGET_HEADER)
 
 add_library(${TARGET_NAME} SHARED ${TARGET_SOURCE} ${TARGET_HEADER} ${TARGET_CUDA_SOURCE} ${TARGET_CUDA_HEADER})
 
+# Set version property.
+set_target_properties(${TARGET_NAME} PROPERTIES VERSION ${TARGET_VERSION})
+
 # Enable 'DEBUG' Macro in Debug Mode
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
     target_compile_definitions(${TARGET_NAME} PRIVATE -DDEBUG)
