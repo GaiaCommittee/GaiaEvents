@@ -18,6 +18,8 @@ endif()
 #==============================
 
 set(TARGET_NAME "GaiaEvents")
+set(TARGET_VERSION 0.9.0)
+set(INSTALL_NAMESPACE "Gaia")
 
 #==============================
 # Command Lines
@@ -92,10 +94,20 @@ endif()
 # Install Scripts
 #===============================
 
+configure_file(
+        "${PROJECT_SOURCE_DIR}/${TARGET_NAME}Config.hpp.in"
+        "${PROJECT_BINARY_DIR}/${TARGET_NAME}Config.hpp")
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
 # Install executable files and libraries to 'default_path/'.
 install(TARGETS ${TARGET_NAME}
+        EXPORT ${TARGET_NAME}-targets
         RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
         LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 # Install header files to 'default_path/TARGET_NAME/'
 install(DIRECTORY "." DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${TARGET_NAME}/ FILES_MATCHING PATTERN "*.hpp")
+install(EXPORT ${TARGET_NAME}-targets
+        NAMESPACE ${INSTALL_NAMESPACE}::
+        FILE ${TARGET_NAME}Config.cmake
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/${TARGET_NAME})
