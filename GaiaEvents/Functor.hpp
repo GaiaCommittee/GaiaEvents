@@ -91,6 +91,11 @@ namespace Gaia::Events
     public:
         using FunctorBase<std::function<void(ArgumentTypes...)>>::FunctorBase;
 
+        /// Allow implicit convert from lambda expressions to Functors.
+        Functor(std::function<void(ArgumentTypes...)> functor) :
+            FunctorBase<std::function<void(ArgumentTypes...)>>(functor)
+        {}
+
         /**
          * @brief Check whether this functor is empty or not.
          * @retval true Functor is empty, Execute(...) will return directly.
